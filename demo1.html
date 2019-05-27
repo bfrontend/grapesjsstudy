@@ -65,12 +65,13 @@
     <div class="panel__right">
       <div class="layers-container"></div>
       <div class="styles-container"></div>
+      <div class="traits-container"></div>
     </div>
   </div>
   <div id="gjs">
     <h1>hello world</h1>
   </div>
-  <div id="blocks"></div>
+  <div id="blocks" style="background: red"></div>
   <script src="./node_modules/grapesjs/dist/grapes.min.js"></script>
   <script>
     const editor = grapesjs.init({
@@ -178,27 +179,6 @@
       }
     })
 
-    editor.BlockManager.add('my-block-id', {
-      appendTo: '#blocks',
-      label: 'blockdd',
-      content: {
-      tagName: 'div',
-      draggable: false,
-      attributes: { 'some-attribute': 'some-value' },
-      components: [
-        {
-          tagName: 'span',
-          content: '<b>Some static content</b>',
-        }, {
-          tagName: 'div',
-          // use `content` for static strings, `components` string will be parsed
-          // and transformed in Components
-          components: '<span>HTML at some point</span>',
-        }
-      ]
-    }
-    })
-
     editor.Panels.addPanel({
       id: 'panel-top',
       el: '.panel__top',
@@ -262,6 +242,48 @@
         smEl.style.display = 'none';
       },
     });
+
+    editor.Commands.add('show-traits', {
+      getTraitsEl(editor) {
+        const row = editor.getContainer().closest('.editor-row');
+        return row.querySelector('.traits-container');
+      },
+      run(editor, sender) {
+        this.getTraitsEl(editor).style.display = ''
+      },
+      stop(editor, sender) {
+        this.getTraitsEl(editor).style.display = 'none'
+      }
+    })
+
+    // 定义组件
+    var comps = editor.DomComponents;
+
+    var defaultType = comps.getType('text')
+    var defaultModel = defaultType.model;
+    var defaultView = defaultType.view;
+
+    comps.addType('navitem', {
+      model: defaultModel.extend({
+        defaults: Object.assign({}, defaultModel.prototype.defaults, {
+          // draggable: 'form, form *',
+          // droppable: false,
+        })
+      })
+    })
+
+    editor.BlockManager.add('myblock', {
+      label: 'myblock',
+      content: {
+        type: 'wrapper',
+        style: {
+          width: '200px',
+          height: '350px',
+          'background-color': 'red'
+        },
+        removable: true
+      }
+    })
 
 
     editor.on('run:export-template:before', opts => {
